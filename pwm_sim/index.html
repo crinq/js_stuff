@@ -389,9 +389,9 @@ input:button {width : 500px}
 	<canvas id="canvas_plot" width="200" height="200" onmousedown="isMouseDown = true; set_ab(event);" onmousemove="set_ab(event);">
 		not supported
 	</canvas><br>
-	<input type="radio" id="radio_std" name="mode" onclick="update();" checked="checked">std<br>
-	<input type="radio" id="radio_svm" name="mode" onclick="update();">SVM<br>
-	<input type="radio" id="radio_fbsvm" name="mode" onclick="update();">flat bottom SVM<br>
+	<input type="radio" id="radio_std" name="mode" onclick="update();" checked="checked">std // (U + V + W) / 3 = 0.5<br>
+	<input type="radio" id="radio_svm" name="mode" onclick="update();">SVM // MAX(U, V, W) + MIN(U, V, W) = 1 / 3 = 0.5<br>
+	<input type="radio" id="radio_fbsvm" name="mode" onclick="update();">flat bottom SVM // MIN(U, V, W) = 0<br>
 	<input type="radio" id="radio_left" name="align" onclick="update();">left pwm<br>
 	<input type="radio" id="radio_right" name="align" onclick="update();">right pwm<br>
 	<input type="radio" id="radio_center" name="align" onclick="update();"" checked="checked">center pwm<br>
