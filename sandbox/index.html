@@ -1,0 +1,171 @@
+<html>
+<meta charset="utf-8">
+<head><title>sandbox</title>
+<script type="text/javascript">
+function $(element) {
+  return(document.getElementById(element));
+}
+
+function key_callback(e){
+   if(e.which == 9){
+       e.preventDefault();
+       var ta = $("editor");
+       var s = ta.selectionStart;
+       ta.value = ta.value.substring(0,ta.selectionStart) + "   " + ta.value.substring(ta.selectionEnd);
+       ta.selectionEnd = s + 3; 
+   }
+   
+   if(e.which == 13){
+   }
+}
+
+function eval_code(){
+   var h = "<html> <meta charset='utf-8'> <head><title>sandbox</title> <script type='text/javascript' src = 'sandbox.js'></" + "script></head><body id = 'body'><script type='text/javascript'>";
+   var f = "</" + "script></body></html>";
+   
+   $("sandbox").srcdoc = h + $("editor").value + f;
+}
+
+</script>
+
+
+</head>
+<style type="text/css">
+textarea.editor {width : 49%; height : 600px; display: inline; overflow : auto;}
+iframe.sandbox {width : 50%; height : 600px; float: right;}
+</style>
+
+<body>
+   <input type = "button" id = "eval" onclick = "eval_code();" value = "eval"><br>
+   <textarea class = "editor" id = "editor" onkeydown = "key_callback(event);" >
+      var p0 = new plot("df", 500, 200, 0, 1, 0, 100); 
+      var b = new button("df", "run", "run");
+
+      // mot config
+      var r = 9.6;
+      var ld = 0.0013;
+      var lq = 0.0013;
+      var j = 0.00026;
+      var psi = 0.055;
+      var p = 4;
+
+      // load config
+      var damping = 0.05;
+      var load = 1;
+
+      // inverter config
+      var pwm_volt = 150;
+
+      // loop config;
+      var calc_freq = 15000;
+      var pwm_mult = 1;
+      var cur_mult = 1;
+      var torque_mult = 3;
+      var acc_mult = 1;
+      var vel_mult = 1;
+      var pos_mult = 1;
+      var cmd_mult = 1;
+      var fb_mult = 1;
+
+      var pos_p = 100;
+      var vel_p = 2000;
+      var vel_i = 20;
+      var cur_p = 0.5;
+      var cur_i  = 0.001;
+      var cur_ff = 1;
+      var cur_ind = 1;
+      var cur_bw = 2000;
+
+      // motor state
+      var pos = 0;
+      var vel = 0;
+      var id = 0;
+      var iq = 0;
+
+      // inter loop com vars
+      var ud = 0;
+      var uq = 0;
+
+      var pos_fb = 0;
+      var pos_cmd = 0;
+      var pos_error = 0;
+      var vel_cmd = 0;
+      var vel_fb = 0;
+      var vel_error = 0;
+      var acc_cmd = 0;
+      var torque_cmd = 0;
+      var torque_error_sum = 0;
+      var iq_cmd = 0;
+
+      // misc vars
+      var acc = 0;
+      var torque = 0;
+      var indd = 0;
+      var indq = 0;
+      var psid = 0;
+      var psiq = 0;
+
+      function mot(period){
+         pos += vel * period;
+         vel += acc * period;
+         acc = torque / j;
+         torque = 3/2 * p * (psi * iq + (ld -lq) * id * iq);
+
+         psid = ld * id + psi;
+         psiq = lq * iq;
+
+         indd = vel * p * psiq;
+         indq = vel * p * psid;
+
+         id += (ud - r * id + indd) / ld * period; 
+         iq += (uq - r * iq - indq) / lq * period; 
+      }
+
+      function fb(period){
+         vel_fb = (pos - pos_fb) / period;
+         pos_fb = pos;
+      }
+
+      function cmd(period){
+         pos_cmd = 0;
+      }
+
+      function pos_pid(period){
+         pos_error = pos_cmd - pos_fb;
+         vel_cmd = pos_error * pos_p;
+      }
+
+      function vel_pid(period){
+         vel_error = vel_cmd - vel_fb;
+         acc_cmd = vel_error * vel_p / period;
+      }
+
+      function acc_pid(period){
+         torque_error_sum += vel_error * vel_i * period;
+         torque_cmd = j * acc_cmd + torque_error_sum;
+      }
+
+      function torque_pid(period){
+         iq_cmd = torque_cmd * 2/3 / p / psi;
+         id_cmd = 0;
+      }
+
+      function cur_pid(period){
+         
+      }
+
+      function run(){
+         period = 1 / calc_freq;
+         uq = 10;
+         for(time = 0; time < 1; time += period){
+            mot(period);
+            p0.plot(time, pos, "red");
+            p0.plot(time, vel, "blue");
+         }
+      }
+
+   </textarea>
+   <iframe class = "sandbox" id = "sandbox"></iframe>
+
+</body>
+</html>
