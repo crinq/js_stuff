@@ -154,10 +154,16 @@ function calc(){
 			var t = Math.max($("teeth").value, 1); // ()
 			var mo = Math.max($("module").value / 1000.0, 0.001); // (m)
 			
+			pitch = t * mo;
+			drive_lin_mass = 0;
+		break;
+		case "rack":
+			var t = Math.max($("teeth").value, 1); // ()
+			var mo = Math.max($("module").value / 1000.0, 0.001); // (m)
+			
 			pitch = t * mo * pi;
 			drive_lin_mass = 0;
 		break;
-		
 	}
 
 	reduction = 2.0 * pi / pitch;
@@ -196,12 +202,19 @@ function update(){
 			mode = "belt";
 		}
 	}
+	radio = document.getElementById('radio_rack');
+	if(radio){
+		if(radio.checked){
+			mode = "rack";
+		}
+	}
 	
 	var div = document.getElementById("drive_div");
 	switch(mode){
 		case "screw":
 			div.innerHTML = "<input type='text' id='diameter' name='mode' oninput='calc();' value='20'> spindel diameter (mm)<br> <input type='text' id='length' name='mode' oninput='calc();'' value='500'> spindel length (mm)<br> <input type='text' id='pitch' name='mode' oninput='calc();' value='10'> spindel pitch (mm)<br>";
 		break;
+		case "rack":
 		case "belt":
 			div.innerHTML = "<input type='text' id='teeth' name='mode' oninput='calc();' value='20'> #teeth ()<br> <input type='text' id='module' name='mode' oninput='calc();'' value='1.5'> module (mm)<br> <br>";
 		break;
@@ -225,7 +238,8 @@ input:button {width : 500px}
 	</div>
    <br>
 	<input type="radio" id="radio_screw" name="mode" checked="checked" onclick="update();"> screw drive<br>
-	<input type="radio" id="radio_belt" name="mode" onclick="update();"> belt/rack drive<br>
+	<input type="radio" id="radio_belt" name="mode" onclick="update();"> belt drive<br>
+	<input type="radio" id="radio_rack" name="mode" onclick="update();"> rack drive<br>
 	<br>
    <input type="text" id="torque" name="mode" oninput="calc();" value="2"> motor torque (Nm)<br>
    <input type="text" id="momentum" name="mode" oninput="calc();" value="0.5"> motor momentum (kgcm^2)<br>
