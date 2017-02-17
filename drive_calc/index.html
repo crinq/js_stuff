@@ -15,9 +15,10 @@ function $(element) {
   return(document.getElementById(element));
 }
 
-var min_ratio = 1.0;
+var min_ratio = 0.5;
 var max_ratio = 5.0;
-var ratio_step = 0.1;
+var ratio_step = 0.25;
+var mode = "screw";
 
 var iron_density = 7820.0; // (kg/m^3)
 var pi = 3.141526;
@@ -26,7 +27,7 @@ var force = [];
 var speed = [];
 var mot_lin_mass = [];
 var acc = [];
-var spindel_lin_mass;
+var drive_lin_mass;
 var carriage_mass;
 
 function plot(){
@@ -108,19 +109,19 @@ function print(){
    ht += "  <th>speed (m/min)</th>\n";
    ht += "  <th>acc (m/s^2)</th>\n";
    ht += "  <th>linear mass motor (kg)</th>\n";
-   ht += "  <th>linear mass spindel (kg)</th>\n";
-   ht += "  <th>motor linear mass : carriage mass + spindel linear mass</th>\n";
+   ht += "  <th>linear mass drive (kg)</th>\n";
+   ht += "  <th>motor linear mass : carriage mass + drive linear mass</th>\n";
    ht += " </tr>\n";
    for(i = 0; i * ratio_step + min_ratio <= max_ratio; i += 1){
       ratio = (i * ratio_step + min_ratio);
       ht += " <tr>\n";
-      ht += "  <td>" + round(ratio, 10) + "</td>\n";
+      ht += "  <td>" + round(ratio, 100) + "</td>\n";
       ht += "  <td>" + round(force[i], 10) + "</td>\n";
       ht += "  <td>" + round(speed[i] * 60, 10) + "</td>\n";
       ht += "  <td>" + round(acc[i], 10) + "</td>\n";
       ht += "  <td>" + round(mot_lin_mass[i], 10) + "</td>\n";
-      ht += "  <td>" + round(spindel_lin_mass, 10) + "</td>\n";
-      ht += "  <td>" + round(mot_lin_mass[i] / (spindel_lin_mass + carriage_mass), 10) + "</td>\n";
+      ht += "  <td>" + round(drive_lin_mass, 10) + "</td>\n";
+      ht += "  <td>" + round(mot_lin_mass[i] / (drive_lin_mass + carriage_mass), 10) + "</td>\n";
       ht += " </tr>\n";
    }
    ht += "</table>"
@@ -134,31 +135,79 @@ function calc(){
    mot_lin_mass.length = 0;
    acc.length = 0;
 
-   var r = Math.max($("diameter").value / 2000.0, 0.001); // (m)
-   var l = Math.max($("length").value / 1000.0, 0.001); // (m)
-   var p = Math.max($("pitch").value / 1000.0, 0.001); // (m)
+	var reduction = 1;
+	var pitch = 1;
+	switch(mode){
+		case "screw":
+			var r = Math.max($("diameter").value / 2000.0, 0.001); // (m)
+			var l = Math.max($("length").value / 1000.0, 0.001); // (m)
+			var p = Math.max($("pitch").value / 1000.0, 0.001); // (m)
+			
+			pitch = p;
+			
+			var sm = iron_density * l * r * r * pi; // spindel mass (kg)
+		   var sj = sm / 2.0 * r * r; // spindel momentum (kgm^2)
+		   var lsm = sj * (2.0 * pi / p) * (2.0 * pi / p); // spindel linear mass (kg)
+		   drive_lin_mass = lsm;
+		break;
+		case "belt":
+			var t = Math.max($("teeth").value, 1); // ()
+			var mo = Math.max($("module").value / 1000.0, 0.001); // (m)
+			
+			pitch = t * mo * pi;
+			drive_lin_mass = 0;
+		break;
+		
+	}
+
+	reduction = 2.0 * pi / pitch;
+
    var t = Math.max($("torque").value * 1.0, 0.001); // (Nm)
    var j = Math.max($("momentum").value / 10000.0, 0.000000001); // (kgm^2)
    var s = Math.max($("speed").value / 60.0, 0.1); // (1/s)
    var m = Math.max($("mass").value * 1.0, 0.00001); // (kg)
    var e = Math.max($("eff").value * 1.0, 0.0001);
 
-   var sm = iron_density * l * r * r * pi; // spindel mass (kg)
-   var sj = sm / 2.0 * r * r; // spindel momentum (kgm^2)
-   var lsm = sj * (2.0 * pi / p) * (2.0 * pi / p); // spindel linear mass (kg)
-   spindel_lin_mass = lsm;
+   
    carriage_mass = m;
 
    for(i = 0; i * ratio_step + min_ratio <= max_ratio; i += 1){
       ratio = (i * ratio_step + min_ratio);
-      force[i] = 2.0 * pi / p * ratio * t * e; // force (N)
-      speed[i] = s / ratio * p; // max speed (m/s)
-      mot_lin_mass[i] = j * (ratio * 2.0 * pi / p) * (ratio * 2.0 * pi / p); // motor linear mass (kg)
-      acc[i] = force[i] / (mot_lin_mass[i] + lsm + m);
+      force[i] = reduction * ratio * t * e; // force (N)
+      speed[i] = s / ratio * pitch; // max speed (m/s)
+      mot_lin_mass[i] = j * (ratio * reduction) * (ratio * reduction); // motor linear mass (kg)
+      acc[i] = force[i] / (mot_lin_mass[i] + drive_lin_mass + carriage_mass);
    }
 
    print();
    plot();
+}
+
+function update(){
+	var radio = document.getElementById('radio_screw');
+	if(radio){
+		if(radio.checked){
+			mode = "screw";
+		}
+	}
+	radio = document.getElementById('radio_belt');
+	if(radio){
+		if(radio.checked){
+			mode = "belt";
+		}
+	}
+	
+	var div = document.getElementById("drive_div");
+	switch(mode){
+		case "screw":
+			div.innerHTML = "<input type='text' id='diameter' name='mode' oninput='calc();' value='20'> spindel diameter (mm)<br> <input type='text' id='length' name='mode' oninput='calc();'' value='500'> spindel length (mm)<br> <input type='text' id='pitch' name='mode' oninput='calc();' value='10'> spindel pitch (mm)<br>";
+		break;
+		case "belt":
+			div.innerHTML = "<input type='text' id='teeth' name='mode' oninput='calc();' value='20'> #teeth ()<br> <input type='text' id='module' name='mode' oninput='calc();'' value='1.5'> module (mm)<br> <br>";
+		break;
+	}
+	
+	calc();
 }
 
 </script>
@@ -167,14 +216,17 @@ function calc(){
 input:button {width : 500px}
 </style>
 
-<body onload="calc();">
+<body onload="update();">
 	<canvas id="canvas" width="500" height="400">
 		not supported
 	</canvas><br><br>
-	<input type="text" id="diameter" name="mode" oninput="calc();" value="20"> spindel diameter (mm)<br>
-   <input type="text" id="length" name="mode" oninput="calc();" value="500"> spindel length (mm)<br>
-   <input type="text" id="pitch" name="mode" oninput="calc();" value="10"> spindel pitch (mm)<br>
+	<div id="drive_div">
+		
+	</div>
    <br>
+	<input type="radio" id="radio_screw" name="mode" checked="checked" onclick="update();"> screw drive<br>
+	<input type="radio" id="radio_belt" name="mode" onclick="update();"> belt/rack drive<br>
+	<br>
    <input type="text" id="torque" name="mode" oninput="calc();" value="2"> motor torque (Nm)<br>
    <input type="text" id="momentum" name="mode" oninput="calc();" value="0.5"> motor momentum (kgcm^2)<br>
    <input type="text" id="speed" name="mode" oninput="calc();" value="5000"> motor speed (1/min)<br>
