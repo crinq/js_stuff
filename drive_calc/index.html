@@ -215,8 +215,9 @@ function update(){
 			div.innerHTML = "<input type='text' id='diameter' name='mode' oninput='calc();' value='20'> spindel diameter (mm)<br> <input type='text' id='length' name='mode' oninput='calc();'' value='500'> spindel length (mm)<br> <input type='text' id='pitch' name='mode' oninput='calc();' value='10'> spindel pitch (mm)<br>";
 		break;
 		case "rack":
+			div.innerHTML = "<input type='text' id='teeth' name='mode' oninput='calc();' value='20'> #teeth ()<br> <input type='text' id='module' name='mode' oninput='calc();'' value='1.5'> module<br> <br>";
 		case "belt":
-			div.innerHTML = "<input type='text' id='teeth' name='mode' oninput='calc();' value='20'> #teeth ()<br> <input type='text' id='module' name='mode' oninput='calc();'' value='1.5'> module (mm)<br> <br>";
+			div.innerHTML = "<input type='text' id='teeth' name='mode' oninput='calc();' value='20'> #teeth ()<br> <input type='text' id='module' name='mode' oninput='calc();'' value='5'> module (mm)<br> <br>";
 		break;
 	}
 	
