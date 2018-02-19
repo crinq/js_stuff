@@ -162,13 +162,18 @@ function update(){
 		var m_rel = 1.5 * p * (ld - lq) * Iq * Id;
 		var m = m_perm + m_rel;
 		var p_el = Math.sqrt(Ud * Ud + Uq * Uq) * Math.sqrt(Id * Id + Iq * Iq) * 1.5;
+		var p_ac = 1.5 * (Ud * Id + Iq * Uq);
+		var p_re = 1.5 * (Uq * Id - Ud * Iq);
+		var p_th = 1.5 * r * Math.sqrt(Id * Id + Iq * Iq);
+
       radio.innerHTML = "n = " + round(rpm, 100) + " / min<br>";
 		radio.innerHTML += "M_perm = " + round(m_perm, 100) + " Nm<br>";
 		radio.innerHTML += "M_rel = " + round(m_rel, 100) + " Nm<br>";
 		radio.innerHTML += "M = " + round(m, 100) + " Nm<br>";
 		radio.innerHTML += "P_schein = " + round(p_el, 100) + " W<br>";
-		radio.innerHTML += "P_wirk = " + round(1.5 * (Id * Ud + Iq * Uq), 100) + " W<br>";
-		radio.innerHTML += "P_blind = " + round(p_el - 1.5 * (Id * Ud + Iq * Uq), 100) + " W<br>";
+		radio.innerHTML += "P_wirk = " + round(p_ac, 100) + " W<br>";
+		radio.innerHTML += "P_blind = " + round(p_re, 100) + " W<br>";
+		radio.innerHTML += "P_th_res = " + round(p_th, 100) + " W<br>";
 		radio.innerHTML += "P_m = " + round(Omega / p * m, 100) + " W<br>";
 		radio.innerHTML += "Id = " + round(Id, 100) + " A<br>";
 		radio.innerHTML += "Iq = " + round(Iq, 100) + " A<br>";
