@@ -69,6 +69,12 @@ class plot{
       var canvas = $(this.id + "_canvas");
       var ctx = canvas.getContext('2d');
       
+      x = (x - this.x_min) / (this.x_max - this.x_min) * this.width;
+      y = this.height - (y - this.y_min) / (this.y_max - this.y_min) * this.height;
+     
+      x2 = (x2 - this.x_min) / (this.x_max - this.x_min) * this.width;
+      y2 = this.height - (y2 - this.y_min) / (this.y_max - this.y_min) * this.height;
+     
       if(ctx){
          ctx.beginPath();
          ctx.strokeStyle=color;
