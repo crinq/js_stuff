@@ -1,0 +1,381 @@
+<html>
+<meta charset="utf-8">
+<head><title>Fräse</title>
+<script type="text/javascript">
+
+var header = "link pid\n";
+var mot_type = "";
+var cmd_fb = "";
+var mot_conf = "";
+var misc = "link misc\n";
+var footer = "";
+
+const dc = {
+  name: "DC",
+  ui: [],
+  eval: function(){
+    header += "link dc\n";
+  }
+};
+
+const pmsm = {
+  name: "PMSM",
+  ui: [],
+  eval: function(){
+    header += "link pmsm\n";
+  }
+};
+
+const acim = {
+  name: "ACIM",
+  ui: [],
+  eval: function(){
+    header += "link acim\n";
+  }
+};
+
+
+
+const fb_encoder = {
+  name: "Encoder",
+  ui_id: "fb_div",
+  ui: [
+    {
+      name: "Resolution",
+      id: "fb_enc_res",
+      type: "int_value",
+      doc: "Edges / rev",
+      value: 16384
+    },
+    {
+      type: "br"
+    },
+    {
+      name: "input Filter",
+      id: "fb_enc_filter",
+      type: "int_value",
+      doc: "input capture filter ",
+      value: 255
+    },
+    {
+      type: "br"
+    },
+    {
+      name: "index",
+      id: "fb_enc_index",
+      type: "bool_value",
+      doc: "index signal",
+      value: 1
+    }
+  ],
+  eval: function(){
+    cmd_fb += "link enc_fb0\n";
+    cmd_fb += "conf0.mot_fb_res = " + parseInt($("fb_enc_res").value, 10) + "\n";
+  }
+};
+
+const fb_resolver = {
+  name: "Resolver",
+  ui_id: "fb_div",
+  ui: [
+    {
+      name: "Frequency",
+      id: "fb_res_freq",
+      type: "select",
+      doc: "Resolver excitation frequency [Hz]",
+      value: [
+        {
+          name: "5000"
+        },
+        {
+          name: "10000"
+        },
+        {
+          name: "15000"
+        },
+        {
+          name: "20000"
+        },
+        {
+          name: "30000"
+        }
+      ]
+    },
+    {
+      type: "br"
+    },
+    {
+      name: "Phase",
+      id: "fb_res_phase",
+      type: "float_value",
+      doc: "resolver phase delay [0-1]",
+      value: 0
+    }
+  ],
+  eval: function(){
+    cmd_fb += "link res_fb0\n";
+    cmd_fb += "res0.freq = " + parseInt($("fb_res_freq").value, 10) + "\n";
+    cmd_fb += "res0.phase = " + parseInt($("fb_res_phase").value, 10) + "\n";
+  }
+};
+
+const cmd_encoder = {
+  name: "Quadrature",
+  ui_id: "cmd_div",
+  ui: [
+    {
+      name: "Resolution",
+      id: "cmd_res",
+      type: "int_value",
+      doc: "steps / rev",
+      value: 16384
+    },
+    {
+      type: "br"
+    },
+    {
+      name: "input Filter",
+      id: "fb_enc_filter",
+      type: "int_value",
+      doc: "input capture filter ",
+      value: 255
+    }
+  ],
+  eval: function(){
+    cmd_fb += "link enc_cmd\n";
+    cmd_fb += "conf0.cmd_res = " + parseInt($("cmd_res").value, 10) * 2 + "\n";
+  }
+};
+
+
+const ui = [
+  {
+    type: "div",
+    value: [
+      {
+        name: "Motor type",
+        id: "motor_type",
+        type: "select",
+        doc: "",
+        value: [
+          dc,
+          pmsm,
+          acim
+        ],
+        eval: function(){
+          this.value[$("motor_type").selectedIndex].func();
+        }
+      },
+      {
+        type: "br"
+      },
+      {
+        type: "div",
+        value:[
+          {
+            name: "Resistance",
+            id: "mot_r",
+            type: "float_value",
+            doc: "phase resistance [ohm]",
+            value: 1.0
+          },
+          {
+            type: "br"
+          },
+          {
+            name: "Inductance",
+            id: "mot_l",
+            type: "float_value",
+            doc: "phase inductance [Henry]",
+            value: 0.001
+          },
+          {
+            type: "br"
+          },
+          {
+            name: "Inertia",
+            id: "mot_j",
+            type: "float_value",
+            doc: "inertia [kg m^2]",
+            value: 1.0
+          },
+        ]
+      }
+    ]
+  },
+  {
+    type: "div",
+    value: [
+      {
+        name: "FB type",
+        id: "fb_type",
+        type: "select",
+        doc: "",
+        value: [
+          fb_encoder,
+          fb_resolver
+        ]
+      },
+      {
+        type: "br"
+      },
+      {
+        type: "div",
+        id: "fb_div"
+      }
+    ]
+  },
+  {
+    type: "div",
+    value: [
+      {
+        name: "CMD type",
+        id: "cmd_type",
+        type: "select",
+        doc: "",
+        value: [
+          cmd_encoder
+        ]
+      },
+      {
+        type: "br"
+      },
+      {
+        type: "div",
+        id: "cmd_div"
+      }
+    ]
+  },
+  {
+    type: "br"
+  },
+  {
+    name: "Config:<br>",
+    id: "config",
+    type: "txt",
+    value: ""
+  }
+];
+
+var index = 0;
+
+
+function init_ui(ui){
+  var html = "";
+  for(var i in ui){
+    switch(ui[i].type){
+      case "br":
+        html += "<br>"
+        break;
+
+      case "div":
+        html += "<div id = '" + ui[i].id + "' style = 'border-style: solid; display: inline-block'>\n";
+        html += init_ui(ui[i].value);
+        html += "</div>\n";
+        break;
+
+      case "int_value":
+      case "float_value":
+        html += ui[i].name + " <input type='text' id = '" + ui[i].id + "' value='" + ui[i].value + "'></input> " + ui[i].doc;
+        break;
+
+      case "button":
+        html += ui[i].name + " <input type='button' value='" + ui[i].value + "' onclick = '" + ui[i].func + "();'></input> " + ui[i].doc;
+        break;
+
+      case "select":
+        html += ui[i].name;
+        html += " <select id = '" + ui[i].id + "'>\n";
+        for(var s in ui[i].value){
+          html += "<option>" + ui[i].value[s].name + "</option>";
+        }
+        html += "</select> " + ui[i].doc;
+        break;
+
+      case "txt":
+        html += ui[i].name + " <textarea id='" + ui[i].id + "'></textarea>";
+        break;
+
+      default:
+        html += ui[i].type + "\n";
+    }
+  }
+
+  return(html);
+}
+
+function eval_ui(ui){
+  for(var i in ui){
+    switch(ui[i].type){
+      case "select":
+        var index = $(ui[i].id).selectedIndex;
+        if(!(typeof ui[i].value[index].ui === "undefined") && !(typeof ui[i].value[index].ui_id === "undefined")){
+          var html = init_ui(ui[i].value[index].ui);
+          var div = $(ui[i].value[index].ui_id);
+          div.innerHTML = html;
+        }
+        if(!(typeof ui[i].value[index].eval === "undefined")){
+          ui[i].value[index].eval();
+        }
+        break;
+      
+      case "div":
+        eval_ui(ui[i].value);
+        break;
+    }
+  }
+}
+
+function gen_config(){
+  if(index == 0){
+    eval_ui(ui);
+
+    var div = $("config");
+    div.value = "";
+    div.value = header + mot_type + cmd_fb + mot_conf + misc + footer;
+
+    header = "link pid\n";
+    mot_type = "";
+    cmd_fb = "";
+    mot_conf = "";
+    misc = "link misc\n";
+    footer = "";
+  }
+  index++;
+  index %= 100;
+  requestAnimationFrame(gen_config);
+}
+
+function $(id){
+  return(document.getElementById(id));
+}
+
+function u(v){
+  if(typeof v === "undefinde"){
+    return("");
+  }
+  return(v);
+}
+
+function init(){
+  div = $("ui");
+  div.innerHTML = init_ui(ui);
+  gen_config();
+}
+
+</script>
+</head>
+<style type="text/css">
+/* input {width : 500px} */
+</style>
+
+<body onload="init();">
+  <div id="ui"></div>
+</body>
+</html>
+
+
+
+
+
+
