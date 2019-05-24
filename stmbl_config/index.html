@@ -14,14 +14,13 @@ var error = "";
 
 
 // motor ui
-
-var motor_ui = [
-resistance= {
+var  motor_ui = [
+  resistance = {
     name: "Resistance",
     id: "mot_r",
     type: "float_value",
     doc: "phase resistance [ohm]",
-    value: 1.0
+    value: "i don't care"
   },
   {type: "br"},
   inductance = {
@@ -29,7 +28,7 @@ resistance= {
     id: "mot_l",
     type: "float_value",
     doc: "phase inductance [Henry]",
-    value: 0.001
+    value: "i don't care"
   },
   {type: "br"},
   inertia = {
@@ -37,18 +36,29 @@ resistance= {
     id: "mot_j",
     type: "float_value",
     doc: "inertia [kg m^2]",
-    value: 1.0
-  }
+    value: "i don't care"
+  },
 ];
 
-var acim_motor_ui = motor_ui.concat([
+var ac_motor_ui = motor_ui.concat([
+  {type: "br"},
+  inertia = {
+    name: "Polecount",
+    id: "mot_polecount",
+    type: "float_value",
+    doc: "polecount",
+    value: ""
+  }
+]);
+
+var acim_motor_ui = ac_motor_ui.concat([
   {type: "br"},
   slip_n = {
     name: "Slip_n",
     id: "mot_acim_slip_n",
     type: "float_value",
     doc: "slip [Hz]",
-    value: 3.0
+    value: "i don't care"
   },
   {type: "br"},
   torque_n = {
@@ -56,7 +66,7 @@ var acim_motor_ui = motor_ui.concat([
     id: "mot_acim_torque_n",
     type: "float_value",
     doc: "torque [Nm]",
-    value: 20.0
+    value: "i don't care"
   },
   {type: "br"},
   freq_n = {
@@ -64,23 +74,41 @@ var acim_motor_ui = motor_ui.concat([
     id: "mot_acim_freq_n",
     type: "float_value",
     doc: "freq [Hz]",
-    value: 50.0
+    value: "i don't care"
   },
 ]);
+
+
+function mot_eval(){
+  if(!isNaN(parseInt($("mot_r").value, 10))){
+    mot_conf += "conf0.r = " + $("mot_r").value + "\n";
+  }
+  if(!isNaN(parseInt($("mot_l").value, 10))){
+    mot_conf += "conf0.l = " + $("mot_l").value + "\n";
+  }
+  if(!isNaN(parseInt($("mot_j").value, 10))){
+    mot_conf += "conf0.j = " + $("mot_j").value + "\n";
+  }
+}
 
 var dc = {
   name: "DC",
   ui: motor_ui,
   eval: function(){
     header += "link dc\n";
+    mot_eval();
   }
 };
 
 var pmsm = {
   name: "PMSM",
-  ui: motor_ui,
+  ui: ac_motor_ui,
   eval: function(){
     header += "link pmsm\n";
+    mot_eval();
+    if(!isNaN(parseInt($("mot_polecount").value, 10))){
+      mot_conf += "conf0.polecount = " + $("mot_polecount").value + "\n";
+    }
   }
 };
 
@@ -89,6 +117,19 @@ var acim = {
   ui: acim_motor_ui,
   eval: function(){
     header += "link acim\n";
+    mot_eval();
+    if(!isNaN(parseInt($("mot_polecount").value, 10))){
+      mot_conf += "conf0.polecount = " + $("mot_polecount").value + "\n";
+    }
+    if(!isNaN(parseInt($("mot_acim_slip_n").value, 10))){
+      mot_conf += "acim_ttc0.slip_n = " + $("mot_acim_slip_n").value + "\n";
+    }
+    if(!isNaN(parseInt($("mot_acim_torque_n").value, 10))){
+      mot_conf += "acim_ttc0.torque_n = " + $("mot_acim_torque_n").value + "\n";
+    }
+    if(!isNaN(parseInt($("mot_acim_freq_n").value, 10))){
+      mot_conf += "acim_ttc0.freq_n = " + $("mot_acim_freq_n").value + "\n";
+    }
   }
 };
 
@@ -106,7 +147,7 @@ var motor_switch = {
   ],
   update: function(){
     motor_conf.innerHTML = init_ui(motor_switch.selected.ui);
-  }
+  },
 };
 
 var fb_encoder = {
@@ -476,6 +517,9 @@ function eval_ui(ui){
   for(var i in ui){
     switch(ui[i].type){
       case "select":
+      if("eval" in ui[i]){
+          ui[i].eval();
+        }
         if("eval" in ui[i].selected){
           ui[i].selected.eval();
         }
