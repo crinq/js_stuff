@@ -240,6 +240,68 @@ var fb_resolver = {
   }
 };
 
+var fb_sanyo = {
+  name: "Sanyo Denki",
+  ui: [],
+  eval: function(){
+    cmd_fb += "link encs\n";
+  }
+};
+
+var fb_mitsu = {
+  name: "Mitsubishi",
+  ui: [],
+  eval: function(){
+    cmd_fb += "link encm\n";
+  }
+};
+
+var fb_fanuc = {
+  name: "Fanuc serial",
+  ui: [],
+  eval: function(){
+    cmd_fb += "link encf\n";
+  }
+};
+
+var fb_smartabs = {
+  name: "Smartabs",
+  ui: [],
+  eval: function(){
+    cmd_fb += "link smartabs\n";
+  }
+};
+
+var fb_yaskawa = {
+  name: "Yaskawa",
+  ui: [],
+  eval: function(){
+    cmd_fb += "link yaskawa\n";
+  }
+};
+
+var fb_switch = {
+  name: "FB type",
+  id: "fb_type",
+  type: "select",
+  value: [
+    {
+      name: "-"
+    },
+    fb_encoder,
+    fb_resolver,
+    fb_sanyo,
+    fb_mitsu,
+    fb_fanuc,
+    fb_smartabs,
+    fb_yaskawa
+  ],
+  update: function(){fb_div.innerHTML = init_ui(fb_switch.selected.ui);}
+};
+
+
+
+
 var cmd_encoder = {
   name: "Quadrature",
   ui: [
@@ -280,20 +342,6 @@ var cmd_sserial = {
     cmd_fb += "link sserial\n";
   }
 }
-
-var fb_switch = {
-  name: "FB type",
-  id: "fb_type",
-  type: "select",
-  value: [
-    {
-      name: "-"
-    },
-    fb_encoder,
-    fb_resolver
-  ],
-  update: function(){fb_div.innerHTML = init_ui(fb_switch.selected.ui);}
-};
 
 var cmd_switch = {
   name: "CMD type",
@@ -553,7 +601,7 @@ function gen_config(){
     error = "";
   }
   index++;
-  index %= 20;
+  index %= 100;
   requestAnimationFrame(gen_config);
 }
 
