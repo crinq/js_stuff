@@ -64,6 +64,26 @@ class plot{
       
       print("<canvas id = '" + id + "_canvas' width = '" + width + "'' height='" + height + "'>not supported</canvas>");
    }
+  
+   line(x, y, x2, y2, color){
+      var canvas = $(this.id + "_canvas");
+      var ctx = canvas.getContext('2d');
+      
+      x = (x - this.x_min) / (this.x_max - this.x_min) * this.width;
+      y = this.height - (y - this.y_min) / (this.y_max - this.y_min) * this.height;
+     
+      x2 = (x2 - this.x_min) / (this.x_max - this.x_min) * this.width;
+      y2 = this.height - (y2 - this.y_min) / (this.y_max - this.y_min) * this.height;
+     
+      if(ctx){
+         ctx.beginPath();
+         ctx.strokeStyle=color;
+         ctx.moveTo(x, y);
+         ctx.lineTo(x2, y2);
+         ctx.stroke();
+         ctx.closePath();
+      }
+   }
    
    plot(x, y, color){
       if(x < this.x_min || x > this.x_max || y < this.y_min || y > this.y_max){
