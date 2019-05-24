@@ -20,7 +20,7 @@ var  motor_ui = [
     id: "mot_r",
     type: "float_value",
     doc: "phase resistance [ohm]",
-    value: "i don't care",
+    value: "i don't know",
     update: function(){
       gen_config();
     }
@@ -31,7 +31,7 @@ var  motor_ui = [
     id: "mot_l",
     type: "float_value",
     doc: "phase inductance [Henry]",
-    value: "i don't care",
+    value: "i don't know",
     update: function(){
       gen_config();
     }
@@ -42,7 +42,40 @@ var  motor_ui = [
     id: "mot_j",
     type: "float_value",
     doc: "inertia [kg m^2]",
-    value: "i don't care",
+    value: "i don't know",
+    update: function(){
+      gen_config();
+    }
+  },
+  {type: "br"},
+  max_torque = {
+    name: "max torque",
+    id: "mot_t",
+    type: "float_value",
+    doc: "max torque [Nm]",
+    value: "i don't know",
+    update: function(){
+      gen_config();
+    }
+  },
+  {type: "br"},
+  max_vel = {
+    name: "max velocity",
+    id: "mot_vel",
+    type: "float_value",
+    doc: "max vel [rad/s]",
+    value: "i don't know",
+    update: function(){
+      gen_config();
+    }
+  },
+  {type: "br"},
+  max_acc = {
+    name: "max acc",
+    id: "mot_acc",
+    type: "float_value",
+    doc: "max acceleration [rad/s^2]",
+    value: "i don't know",
     update: function(){
       gen_config();
     }
@@ -70,7 +103,7 @@ var acim_motor_ui = ac_motor_ui.concat([
     id: "mot_acim_slip_n",
     type: "float_value",
     doc: "slip [Hz]",
-    value: "i don't care",
+    value: "i don't know",
     update: function(){
       gen_config();
     }
@@ -81,7 +114,7 @@ var acim_motor_ui = ac_motor_ui.concat([
     id: "mot_acim_torque_n",
     type: "float_value",
     doc: "torque [Nm]",
-    value: "i don't care",
+    value: "i don't know",
     update: function(){
       gen_config();
     }
@@ -92,7 +125,7 @@ var acim_motor_ui = ac_motor_ui.concat([
     id: "mot_acim_freq_n",
     type: "float_value",
     doc: "freq [Hz]",
-    value: "i don't care",
+    value: "i don't know",
     update: function(){
       gen_config();
     }
@@ -109,6 +142,15 @@ function mot_eval(){
   }
   if(!isNaN(parseInt($("mot_j").value, 10))){
     mot_conf += "conf0.j = " + $("mot_j").value + "\n";
+  }
+  if(!isNaN(parseInt($("mot_vel").value, 10))){
+    mot_conf += "conf0.max_vel = " + $("mot_vel").value + "\n";
+  }
+  if(!isNaN(parseInt($("mot_acc").value, 10))){
+    mot_conf += "conf0.max_acc = " + $("mot_acc").value + "\n";
+  }
+  if(!isNaN(parseInt($("mot_t").value, 10))){
+    mot_conf += "conf0.max_force = " + $("mot_t").value + "\n";
   }
 }
 
@@ -180,7 +222,7 @@ var fb_encoder = {
       id: "fb_enc_res",
       type: "int_value",
       doc: "Edges / rev",
-      value: "i don't care",
+      value: "i don't know",
       update: function(){
         gen_config();
       }
@@ -191,7 +233,7 @@ var fb_encoder = {
       id: "fb_enc_filter",
       type: "int_value",
       doc: "input capture filter ",
-      value: "i don't care",
+      value: "i don't know",
       update: function(){
         gen_config();
       }
@@ -232,7 +274,7 @@ var fb_resolver = {
       doc: "Resolver excitation frequency [Hz]",
       value: [
         {
-          name: "i don't care"
+          name: "i don't know"
         },
         {
           name: "5000"
@@ -260,7 +302,7 @@ var fb_resolver = {
       id: "fb_res_phase",
       type: "float_value",
       doc: "resolver phase delay [0-1]",
-      value: "i don't care",
+      value: "i don't know",
       update: function(){
         gen_config();
       }
@@ -347,7 +389,7 @@ var cmd_encoder = {
       id: "cmd_res",
       type: "int_value",
       doc: "steps / rev",
-      value: "i don't care",
+      value: "i don't know",
       update: function(){
         gen_config();
       }
@@ -358,7 +400,7 @@ var cmd_encoder = {
       id: "fb_enc_filter",
       type: "int_value",
       doc: "input capture filter ",
-      value: "i don't care",
+      value: "i don't know",
       update: function(){
         gen_config();
       }
@@ -560,17 +602,6 @@ function init_ui(ui){
           mid += "<option>" + ui[i].value[s].name + "</option>";
         }
         post = "</select> " + u(ui[i].doc);
-        // if(!("selected" in ui[i])){
-          // Object.defineProperty(ui[i], "selected", {
-          //   get: function(){
-          //     return(this.value[$(this.id).selectedIndex]);
-          //   },
-          //   // set: function(v){
-          //   //   console.log("select.set_seleted(" + v + ")");
-          //   //   $(this.id).selectedIndex = v;
-          //   // }
-          // });
-        // }
         break;
 
       case "txt":
@@ -578,16 +609,6 @@ function init_ui(ui){
         pre += "<textarea";
         pre += prop(ui[i], "value");
         post = "</textarea>";
-        // if(typeof ui[i].v === "undefined"){
-        //   Object.defineProperty(ui[i], "v", {
-        //     get: function(){
-        //       return($(this.id).value);
-        //     },
-        //     set: function(v){
-        //       $(this.id).value = v;
-        //     }
-        //   });
-        // }
         break;
 
       default:
