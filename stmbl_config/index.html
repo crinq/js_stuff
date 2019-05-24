@@ -20,7 +20,10 @@ var  motor_ui = [
     id: "mot_r",
     type: "float_value",
     doc: "phase resistance [ohm]",
-    value: "i don't care"
+    value: "i don't care",
+    update: function(){
+      gen_config();
+    }
   },
   {type: "br"},
   inductance = {
@@ -28,7 +31,10 @@ var  motor_ui = [
     id: "mot_l",
     type: "float_value",
     doc: "phase inductance [Henry]",
-    value: "i don't care"
+    value: "i don't care",
+    update: function(){
+      gen_config();
+    }
   },
   {type: "br"},
   inertia = {
@@ -36,7 +42,10 @@ var  motor_ui = [
     id: "mot_j",
     type: "float_value",
     doc: "inertia [kg m^2]",
-    value: "i don't care"
+    value: "i don't care",
+    update: function(){
+      gen_config();
+    }
   },
 ];
 
@@ -47,7 +56,10 @@ var ac_motor_ui = motor_ui.concat([
     id: "mot_polecount",
     type: "float_value",
     doc: "polecount",
-    value: ""
+    value: "",
+    update: function(){
+      gen_config();
+    }
   }
 ]);
 
@@ -58,7 +70,10 @@ var acim_motor_ui = ac_motor_ui.concat([
     id: "mot_acim_slip_n",
     type: "float_value",
     doc: "slip [Hz]",
-    value: "i don't care"
+    value: "i don't care",
+    update: function(){
+      gen_config();
+    }
   },
   {type: "br"},
   torque_n = {
@@ -66,7 +81,10 @@ var acim_motor_ui = ac_motor_ui.concat([
     id: "mot_acim_torque_n",
     type: "float_value",
     doc: "torque [Nm]",
-    value: "i don't care"
+    value: "i don't care",
+    update: function(){
+      gen_config();
+    }
   },
   {type: "br"},
   freq_n = {
@@ -74,7 +92,10 @@ var acim_motor_ui = ac_motor_ui.concat([
     id: "mot_acim_freq_n",
     type: "float_value",
     doc: "freq [Hz]",
-    value: "i don't care"
+    value: "i don't care",
+    update: function(){
+      gen_config();
+    }
   },
 ]);
 
@@ -147,6 +168,7 @@ var motor_switch = {
   ],
   update: function(){
     motor_conf.innerHTML = init_ui(motor_switch.selected.ui);
+    gen_config();
   },
 };
 
@@ -158,7 +180,10 @@ var fb_encoder = {
       id: "fb_enc_res",
       type: "int_value",
       doc: "Edges / rev",
-      value: "i don't care"
+      value: "i don't care",
+      update: function(){
+        gen_config();
+      }
     },
     {type: "br"},
     fb_enc_filter = {
@@ -166,7 +191,10 @@ var fb_encoder = {
       id: "fb_enc_filter",
       type: "int_value",
       doc: "input capture filter ",
-      value: "i don't care"
+      value: "i don't care",
+      update: function(){
+        gen_config();
+      }
     },
     {type: "br"},
     {
@@ -174,7 +202,10 @@ var fb_encoder = {
       id: "fb_enc_index",
       type: "bool_value",
       doc: "index signal",
-      value: 1
+      value: 1,
+      update: function(){
+        gen_config();
+      }
     }
   ],
   eval: function(){
@@ -218,7 +249,10 @@ var fb_resolver = {
         {
           name: "30000"
         }
-      ]
+      ],
+      update: function(){
+        gen_config();
+      }
     },
     {type: "br"},
     {
@@ -226,7 +260,10 @@ var fb_resolver = {
       id: "fb_res_phase",
       type: "float_value",
       doc: "resolver phase delay [0-1]",
-      value: "i don't care"
+      value: "i don't care",
+      update: function(){
+        gen_config();
+      }
     }
   ],
   eval: function(){
@@ -296,7 +333,7 @@ var fb_switch = {
     fb_smartabs,
     fb_yaskawa
   ],
-  update: function(){fb_div.innerHTML = init_ui(fb_switch.selected.ui);}
+  update: function(){fb_div.innerHTML = init_ui(fb_switch.selected.ui); gen_config();}
 };
 
 
@@ -310,7 +347,10 @@ var cmd_encoder = {
       id: "cmd_res",
       type: "int_value",
       doc: "steps / rev",
-      value: "i don't care"
+      value: "i don't care",
+      update: function(){
+        gen_config();
+      }
     },
     {type: "br"},
     cmd_filter = {
@@ -318,7 +358,10 @@ var cmd_encoder = {
       id: "fb_enc_filter",
       type: "int_value",
       doc: "input capture filter ",
-      value: "i don't care"
+      value: "i don't care",
+      update: function(){
+        gen_config();
+      }
     }
   ],
   eval: function(){
@@ -354,7 +397,7 @@ var cmd_switch = {
     cmd_encoder,
     cmd_sserial
   ],
-  update: function(){cmd_div.innerHTML = init_ui(cmd_switch.selected.ui);}
+  update: function(){cmd_div.innerHTML = init_ui(cmd_switch.selected.ui); gen_config();}
 };
 
 var ui = [
@@ -362,39 +405,45 @@ var ui = [
     type: "div",
     class: "block",
     value: [
-      motor_switch,
-      {type: "br"},
       {
         type: "div",
         class: "block",
-        id: "motor_conf"
-      }
-    ]
-  },
-  {
-    type: "div",
-    class: "block",
-    value: [
-      fb_switch,
-      {type: "br"},
+        value: [
+          motor_switch,
+          {type: "br"},
+          {
+            type: "div",
+            class: "block",
+            id: "motor_conf"
+          }
+        ]
+      },
       {
         type: "div",
         class: "block",
-        id: "fb_div"
-      }
-    ]
-  },
-  {
-    type: "div",
-    class: "block",
-    value: [
-      cmd_switch,
-      {type: "br"},
+        value: [
+          fb_switch,
+          {type: "br"},
+          {
+            type: "div",
+            class: "block",
+            id: "fb_div"
+          }
+        ]
+      },
       {
         type: "div",
         class: "block",
-        id: "cmd_div"
-      }
+        value: [
+          cmd_switch,
+          {type: "br"},
+          {
+            type: "div",
+            class: "block",
+            id: "cmd_div"
+          }
+        ]
+      },
     ]
   },
   {type: "br"},
@@ -452,6 +501,7 @@ function init_ui(ui){
 
       case "div":
         pre = "<div";
+
         mid = init_ui(ui[i].value);
         post = "</div>\n";
         break;
@@ -581,28 +631,23 @@ function eval_ui(ui){
 }
 
 function gen_config(){
-  if(index == 0){
-    eval_ui(ui);
+  eval_ui(ui);
 
-    var div = $("config");
-    div.value = "";
-    div.value = header + mot_type + cmd_fb + mot_conf + misc + footer;
+  var div = $("config");
+  div.value = "";
+  div.value = header + mot_type + cmd_fb + mot_conf + misc + footer;
 
-    div = $("log");
-    div.value = "";
-    div.value = error;
+  div = $("log");
+  div.value = "";
+  div.value = error;
 
-    header = "link pid\n";
-    mot_type = "";
-    cmd_fb = "";
-    mot_conf = "";
-    misc = "link misc\n";
-    footer = "";
-    error = "";
-  }
-  index++;
-  index %= 100;
-  requestAnimationFrame(gen_config);
+  header = "link pid\n";
+  mot_type = "";
+  cmd_fb = "";
+  mot_conf = "";
+  misc = "link misc\n";
+  footer = "";
+  error = "";
 }
 
 function $(id){
@@ -619,7 +664,6 @@ function u(v){
 function init(){
   div = $("ui");
   div.innerHTML = init_ui(ui);
-  gen_config();
 }
 
 </script>
