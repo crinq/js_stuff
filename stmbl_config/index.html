@@ -9,57 +9,125 @@ var cmd_fb = "";
 var mot_conf = "";
 var misc = "link misc\n";
 var footer = "";
+var error = "";
 
-const dc = {
+
+
+// motor ui
+
+var motor_ui = [
+resistance= {
+    name: "Resistance",
+    id: "mot_r",
+    type: "float_value",
+    doc: "phase resistance [ohm]",
+    value: 1.0
+  },
+  {type: "br"},
+  inductance = {
+    name: "Inductance",
+    id: "mot_l",
+    type: "float_value",
+    doc: "phase inductance [Henry]",
+    value: 0.001
+  },
+  {type: "br"},
+  inertia = {
+    name: "Inertia",
+    id: "mot_j",
+    type: "float_value",
+    doc: "inertia [kg m^2]",
+    value: 1.0
+  }
+];
+
+var acim_motor_ui = motor_ui.concat([
+  {type: "br"},
+  slip_n = {
+    name: "Slip_n",
+    id: "mot_acim_slip_n",
+    type: "float_value",
+    doc: "slip [Hz]",
+    value: 3.0
+  },
+  {type: "br"},
+  torque_n = {
+    name: "Torque_n",
+    id: "mot_acim_torque_n",
+    type: "float_value",
+    doc: "torque [Nm]",
+    value: 20.0
+  },
+  {type: "br"},
+  freq_n = {
+    name: "Freq_n",
+    id: "mot_acim_freq_n",
+    type: "float_value",
+    doc: "freq [Hz]",
+    value: 50.0
+  },
+]);
+
+var dc = {
   name: "DC",
-  ui: [],
+  ui: motor_ui,
   eval: function(){
     header += "link dc\n";
   }
 };
 
-const pmsm = {
+var pmsm = {
   name: "PMSM",
-  ui: [],
+  ui: motor_ui,
   eval: function(){
     header += "link pmsm\n";
   }
 };
 
-const acim = {
+var acim = {
   name: "ACIM",
-  ui: [],
+  ui: acim_motor_ui,
   eval: function(){
     header += "link acim\n";
   }
 };
 
-
-
-const fb_encoder = {
-  name: "Encoder",
-  ui_id: "fb_div",
-  ui: [
+var motor_switch = {
+  name: "Motor type",
+  id: "motor_type",
+  type: "select",
+  value: [
     {
+      name: "-"
+    },
+    dc,
+    pmsm,
+    acim
+  ],
+  update: function(){
+    motor_conf.innerHTML = init_ui(motor_switch.selected.ui);
+  }
+};
+
+var fb_encoder = {
+  name: "Encoder",
+  ui: [
+    fb_enc_res = {
       name: "Resolution",
       id: "fb_enc_res",
       type: "int_value",
       doc: "Edges / rev",
-      value: 16384
+      value: "i don't care"
     },
-    {
-      type: "br"
-    },
-    {
+    {type: "br"},
+    fb_enc_filter = {
       name: "input Filter",
       id: "fb_enc_filter",
       type: "int_value",
       doc: "input capture filter ",
-      value: 255
+      value: "i don't care"
     },
-    {
-      type: "br"
-    },
+    {type: "br"},
     {
       name: "index",
       id: "fb_enc_index",
@@ -70,13 +138,20 @@ const fb_encoder = {
   ],
   eval: function(){
     cmd_fb += "link enc_fb0\n";
-    cmd_fb += "conf0.mot_fb_res = " + parseInt($("fb_enc_res").value, 10) + "\n";
+    if(!isNaN(parseInt(fb_enc_res.value, 10))){
+      cmd_fb += "conf0.mot_fb_res = " + fb_enc_res.value + "\n";
+    }
+    else{
+      error += "warning: missing FB encoder resolution!\n";
+    }
+    if(!isNaN(parseInt(fb_enc_filter.value))){
+      cmd_fb += "enc_fb0.filter = " + fb_enc_filter.value + "\n";
+    }
   }
 };
 
-const fb_resolver = {
+var fb_resolver = {
   name: "Resolver",
-  ui_id: "fb_div",
   ui: [
     {
       name: "Frequency",
@@ -84,6 +159,9 @@ const fb_resolver = {
       type: "select",
       doc: "Resolver excitation frequency [Hz]",
       value: [
+        {
+          name: "i don't care"
+        },
         {
           name: "5000"
         },
@@ -101,206 +179,296 @@ const fb_resolver = {
         }
       ]
     },
-    {
-      type: "br"
-    },
+    {type: "br"},
     {
       name: "Phase",
       id: "fb_res_phase",
       type: "float_value",
       doc: "resolver phase delay [0-1]",
-      value: 0
+      value: "i don't care"
     }
   ],
   eval: function(){
     cmd_fb += "link res_fb0\n";
-    cmd_fb += "res0.freq = " + parseInt($("fb_res_freq").value, 10) + "\n";
-    cmd_fb += "res0.phase = " + parseInt($("fb_res_phase").value, 10) + "\n";
+    if(!isNaN(parseInt($("fb_res_freq").value))){
+      cmd_fb += "res0.freq = " + parseInt($("fb_res_freq").value, 10) + "\n";
+    }
+    if(!isNaN(parseInt($("fb_res_phase").value))){
+      cmd_fb += "res0.phase = " + parseInt($("fb_res_phase").value, 10) + "\n";
+    }
   }
 };
 
-const cmd_encoder = {
+var cmd_encoder = {
   name: "Quadrature",
-  ui_id: "cmd_div",
   ui: [
-    {
+    cmd_res = {
       name: "Resolution",
       id: "cmd_res",
       type: "int_value",
       doc: "steps / rev",
-      value: 16384
+      value: "i don't care"
     },
-    {
-      type: "br"
-    },
-    {
+    {type: "br"},
+    cmd_filter = {
       name: "input Filter",
       id: "fb_enc_filter",
       type: "int_value",
       doc: "input capture filter ",
-      value: 255
+      value: "i don't care"
     }
   ],
   eval: function(){
     cmd_fb += "link enc_cmd\n";
-    cmd_fb += "conf0.cmd_res = " + parseInt($("cmd_res").value, 10) * 2 + "\n";
+    if(!isNaN(parseInt(cmd_res.value, 10))){
+      cmd_fb += "conf0.cmd_res = " + parseInt(cmd_res.value, 10) * 2 + "\n";
+    }
+    else{
+      error += "warning: missing CMD resolution!\n";
+    }
+    if(!isNaN(parseInt(cmd_filter.value, 10))){
+      cmd_fb += "enc_cmd0.filter = " + parseInt(cmd_filter.value, 10) + "\n";
+    }
   }
 };
 
+var cmd_sserial = {
+  name: "sserial",
+  ui: [],
+  eval: function(){
+    cmd_fb += "link sserial\n";
+  }
+}
 
-const ui = [
+var fb_switch = {
+  name: "FB type",
+  id: "fb_type",
+  type: "select",
+  value: [
+    {
+      name: "-"
+    },
+    fb_encoder,
+    fb_resolver
+  ],
+  update: function(){fb_div.innerHTML = init_ui(fb_switch.selected.ui);}
+};
+
+var cmd_switch = {
+  name: "CMD type",
+  id: "cmd_type",
+  type: "select",
+  value: [
+    {
+      name: "-"
+    },
+    cmd_encoder,
+    cmd_sserial
+  ],
+  update: function(){cmd_div.innerHTML = init_ui(cmd_switch.selected.ui);}
+};
+
+var ui = [
   {
     type: "div",
+    class: "block",
     value: [
-      {
-        name: "Motor type",
-        id: "motor_type",
-        type: "select",
-        doc: "",
-        value: [
-          dc,
-          pmsm,
-          acim
-        ],
-        eval: function(){
-          this.value[$("motor_type").selectedIndex].func();
-        }
-      },
-      {
-        type: "br"
-      },
+      motor_switch,
+      {type: "br"},
       {
         type: "div",
-        value:[
-          {
-            name: "Resistance",
-            id: "mot_r",
-            type: "float_value",
-            doc: "phase resistance [ohm]",
-            value: 1.0
-          },
-          {
-            type: "br"
-          },
-          {
-            name: "Inductance",
-            id: "mot_l",
-            type: "float_value",
-            doc: "phase inductance [Henry]",
-            value: 0.001
-          },
-          {
-            type: "br"
-          },
-          {
-            name: "Inertia",
-            id: "mot_j",
-            type: "float_value",
-            doc: "inertia [kg m^2]",
-            value: 1.0
-          },
-        ]
+        class: "block",
+        id: "motor_conf"
       }
     ]
   },
   {
     type: "div",
+    class: "block",
     value: [
-      {
-        name: "FB type",
-        id: "fb_type",
-        type: "select",
-        doc: "",
-        value: [
-          fb_encoder,
-          fb_resolver
-        ]
-      },
-      {
-        type: "br"
-      },
+      fb_switch,
+      {type: "br"},
       {
         type: "div",
+        class: "block",
         id: "fb_div"
       }
     ]
   },
   {
     type: "div",
+    class: "block",
     value: [
-      {
-        name: "CMD type",
-        id: "cmd_type",
-        type: "select",
-        doc: "",
-        value: [
-          cmd_encoder
-        ]
-      },
-      {
-        type: "br"
-      },
+      cmd_switch,
+      {type: "br"},
       {
         type: "div",
+        class: "block",
         id: "cmd_div"
       }
     ]
   },
-  {
-    type: "br"
-  },
+  {type: "br"},
   {
     name: "Config:<br>",
     id: "config",
     type: "txt",
-    value: ""
+  },
+  {type: "br"},
+  {
+    name: "Log:<br>",
+    id: "log",
+    type: "txt",
   }
 ];
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 var index = 0;
 
+function prop(obj, prop){
+  if(typeof obj[prop] === "undefined"){
+    return("");
+  }
+  return(" " + prop + " = \"" + obj[prop] + "\"");
+}
+
+global_key = 0;
+global_key_dict = [];
 
 function init_ui(ui){
   var html = "";
+  var pre = "";
+  var mid = "";
+  var post = "";
   for(var i in ui){
     switch(ui[i].type){
       case "br":
-        html += "<br>"
+        pre = "<br"
         break;
 
       case "div":
-        html += "<div id = '" + ui[i].id + "' style = 'border-style: solid; display: inline-block'>\n";
-        html += init_ui(ui[i].value);
-        html += "</div>\n";
+        pre = "<div";
+        mid = init_ui(ui[i].value);
+        post = "</div>\n";
         break;
 
       case "int_value":
       case "float_value":
-        html += ui[i].name + " <input type='text' id = '" + ui[i].id + "' value='" + ui[i].value + "'></input> " + ui[i].doc;
+        pre = u(ui[i].name);
+        pre += "<input type = 'text'";
+        pre += prop(ui[i], "value");
+        post = "</input> " + u(ui[i].doc);
+        
+        pre += " onChange = 'global_key_dict[this.getAttribute(\"model_key\")].value = $(this.id).value; global_key_dict[this.getAttribute(\"model_key\")].update();'"
+        if(!("update" in ui[i])){
+          ui[i].update = function(){};
+        }
+
+        if(!("key" in ui[i])){
+          ui[i].key = global_key++;
+          global_key_dict.push(ui[i]);
+        }
+        pre += " model_key = '" + ui[i].key + "'";
+
+        if(!("value" in ui[i])){
+          ui[i].value = "";
+        }
+
         break;
 
       case "button":
-        html += ui[i].name + " <input type='button' value='" + ui[i].value + "' onclick = '" + ui[i].func + "();'></input> " + ui[i].doc;
+        pre = u(ui[i].name);
+        pre += "<input type = 'button'";
+        pre += prop(ui[i], "value");
+        post = "</input> " + u(ui[i].doc);
         break;
 
       case "select":
-        html += ui[i].name;
-        html += " <select id = '" + ui[i].id + "'>\n";
-        for(var s in ui[i].value){
-          html += "<option>" + ui[i].value[s].name + "</option>";
+        pre = u(ui[i].name);
+        pre += "<select";
+        pre += " onChange = 'global_key_dict[this.getAttribute(\"model_key\")].selected = global_key_dict[this.getAttribute(\"model_key\")].value[$(this.id).selectedIndex]; global_key_dict[this.getAttribute(\"model_key\")].update();'"
+        if(!("update" in ui[i])){
+          ui[i].update = function(){};
         }
-        html += "</select> " + ui[i].doc;
+
+        if(!("key" in ui[i])){
+          ui[i].key = global_key++;
+          global_key_dict.push(ui[i]);
+        }
+        pre += " model_key = '" + ui[i].key + "'";
+
+        if(!("selected" in ui[i])){
+          ui[i].selected = ui[i].value[0];
+        }
+
+        mid = "";
+        for(var s in ui[i].value){
+          mid += "<option>" + ui[i].value[s].name + "</option>";
+        }
+        post = "</select> " + u(ui[i].doc);
+        // if(!("selected" in ui[i])){
+          // Object.defineProperty(ui[i], "selected", {
+          //   get: function(){
+          //     return(this.value[$(this.id).selectedIndex]);
+          //   },
+          //   // set: function(v){
+          //   //   console.log("select.set_seleted(" + v + ")");
+          //   //   $(this.id).selectedIndex = v;
+          //   // }
+          // });
+        // }
         break;
 
       case "txt":
-        html += ui[i].name + " <textarea id='" + ui[i].id + "'></textarea>";
+        pre = u(ui[i].name);
+        pre += "<textarea";
+        pre += prop(ui[i], "value");
+        post = "</textarea>";
+        // if(typeof ui[i].v === "undefined"){
+        //   Object.defineProperty(ui[i], "v", {
+        //     get: function(){
+        //       return($(this.id).value);
+        //     },
+        //     set: function(v){
+        //       $(this.id).value = v;
+        //     }
+        //   });
+        // }
         break;
 
       default:
-        html += ui[i].type + "\n";
+        pre = "<div";
+        mid = ui[i].type + "\n";
+        post = "</div>\n";
     }
-  }
 
+    pre += prop(ui[i], "id");
+    pre += prop(ui[i], "style");
+    pre += prop(ui[i], "class");
+    //pre += prop(ui[i], "onChange");
+    pre += prop(ui[i], "onClick");
+    pre += ">";
+
+    html += pre + mid + post;
+    pre = "";
+    mid = "";
+    post = "";
+  }
   return(html);
 }
 
@@ -308,14 +476,8 @@ function eval_ui(ui){
   for(var i in ui){
     switch(ui[i].type){
       case "select":
-        var index = $(ui[i].id).selectedIndex;
-        if(!(typeof ui[i].value[index].ui === "undefined") && !(typeof ui[i].value[index].ui_id === "undefined")){
-          var html = init_ui(ui[i].value[index].ui);
-          var div = $(ui[i].value[index].ui_id);
-          div.innerHTML = html;
-        }
-        if(!(typeof ui[i].value[index].eval === "undefined")){
-          ui[i].value[index].eval();
+        if("eval" in ui[i].selected){
+          ui[i].selected.eval();
         }
         break;
       
@@ -334,15 +496,20 @@ function gen_config(){
     div.value = "";
     div.value = header + mot_type + cmd_fb + mot_conf + misc + footer;
 
+    div = $("log");
+    div.value = "";
+    div.value = error;
+
     header = "link pid\n";
     mot_type = "";
     cmd_fb = "";
     mot_conf = "";
     misc = "link misc\n";
     footer = "";
+    error = "";
   }
   index++;
-  index %= 100;
+  index %= 20;
   requestAnimationFrame(gen_config);
 }
 
@@ -351,7 +518,7 @@ function $(id){
 }
 
 function u(v){
-  if(typeof v === "undefinde"){
+  if(typeof v === "undefined"){
     return("");
   }
   return(v);
@@ -367,6 +534,8 @@ function init(){
 </head>
 <style type="text/css">
 /* input {width : 500px} */
+.block {border-style: solid; display: inline-block;}
+textarea {width: 500px; height: 500px;}
 </style>
 
 <body onload="init();">
