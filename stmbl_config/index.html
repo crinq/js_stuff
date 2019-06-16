@@ -159,6 +159,7 @@ var dc = {
   ui: motor_ui,
   eval: function(){
     header += "link dc\n";
+    header += "conf0.phase_time = 0\n";
     mot_eval();
   }
 };
@@ -180,6 +181,7 @@ var acim = {
   ui: acim_motor_ui,
   eval: function(){
     header += "link acim\n";
+    header += "conf0.phase_time = 0\n";
     mot_eval();
     if(!isNaN(parseInt($("mot_polecount").value, 10))){
       mot_conf += "conf0.polecount = " + $("mot_polecount").value + "\n";
@@ -408,6 +410,46 @@ var cmd_encoder = {
   ],
   eval: function(){
     cmd_fb += "link enc_cmd\n";
+    if(!isNaN(parseInt(cmd_res.value, 10))){
+      cmd_fb += "conf0.cmd_res = " + parseInt(cmd_res.value, 10) + "\n";
+    }
+    else{
+      error += "warning: missing CMD resolution!\n";
+    }
+    if(!isNaN(parseInt(cmd_filter.value, 10))){
+      cmd_fb += "enc_cmd0.filter = " + parseInt(cmd_filter.value, 10) + "\n";
+    }
+  }
+};
+
+var cmd_encoder = {
+  name: "step/dir",
+  ui: [
+    cmd_res = {
+      name: "Resolution",
+      id: "cmd_res",
+      type: "int_value",
+      doc: "steps / rev",
+      value: "i don't know",
+      update: function(){
+        gen_config();
+      }
+    },
+    {type: "br"},
+    cmd_filter = {
+      name: "input Filter",
+      id: "fb_enc_filter",
+      type: "int_value",
+      doc: "input capture filter ",
+      value: "i don't know",
+      update: function(){
+        gen_config();
+      }
+    }
+  ],
+  eval: function(){
+    cmd_fb += "link enc_cmd\n";
+    cmd_fb += "enc_cmd0.mode = 1\n";
     if(!isNaN(parseInt(cmd_res.value, 10))){
       cmd_fb += "conf0.cmd_res = " + parseInt(cmd_res.value, 10) * 2 + "\n";
     }
