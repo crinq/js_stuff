@@ -422,7 +422,7 @@ var cmd_encoder = {
   }
 };
 
-var cmd_encoder = {
+var cmd_step_dir = {
   name: "step/dir",
   ui: [
     cmd_res = {
@@ -479,7 +479,8 @@ var cmd_switch = {
       name: "-"
     },
     cmd_encoder,
-    cmd_sserial
+    cmd_sserial,
+    cmd_step_dir
   ],
   update: function(){cmd_div.innerHTML = init_ui(cmd_switch.selected.ui); gen_config();}
 };
