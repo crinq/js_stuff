@@ -48,6 +48,17 @@ var  motor_ui = [
     }
   },
   {type: "br"},
+  max_ac_cur = {
+    name: "max current",
+    id: "mot_ac_cur",
+    type: "float_value",
+    doc: "max current [A]",
+    value: "i don't know",
+    update: function(){
+      gen_config();
+    }
+  },
+  {type: "br"},
   max_torque = {
     name: "max torque",
     id: "mot_t",
@@ -142,6 +153,9 @@ function mot_eval(){
   }
   if(!isNaN(parseInt($("mot_j").value, 10))){
     mot_conf += "conf0.j = " + $("mot_j").value + "\n";
+  }
+  if(!isNaN(parseInt($("mot_ac_cur").value, 10))){
+    mot_conf += "conf0.max_ac_cur = " + $("mot_ac_cur").value + "\n";
   }
   if(!isNaN(parseInt($("mot_vel").value, 10))){
     mot_conf += "conf0.max_vel = " + $("mot_vel").value + "\n";
@@ -470,6 +484,14 @@ var cmd_sserial = {
   }
 }
 
+var cmd_jog = {
+  name: "jog",
+  ui: [],
+  eval: function(){
+    cmd_fb += "link jog_cmd\n";
+  }
+}
+
 var cmd_switch = {
   name: "CMD type",
   id: "cmd_type",
@@ -480,7 +502,8 @@ var cmd_switch = {
     },
     cmd_encoder,
     cmd_sserial,
-    cmd_step_dir
+    cmd_step_dir,
+    cmd_jog
   ],
   update: function(){cmd_div.innerHTML = init_ui(cmd_switch.selected.ui); gen_config();}
 };
