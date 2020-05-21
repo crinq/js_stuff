@@ -164,7 +164,7 @@ function update(){
 		var p_el = Math.sqrt(Ud * Ud + Uq * Uq) * Math.sqrt(Id * Id + Iq * Iq) * 1.5;
 		var p_ac = 1.5 * (Ud * Id + Iq * Uq);
 		var p_re = 1.5 * (Uq * Id - Ud * Iq);
-		var p_th = 1.5 * r * Math.sqrt(Id * Id + Iq * Iq);
+		var p_th = 1.5 * r * (Id * Id + Iq * Iq);
 
       radio.innerHTML = "n = " + round(rpm, 100) + " / min<br>";
 		radio.innerHTML += "M_perm = " + round(m_perm, 100) + " Nm<br>";
