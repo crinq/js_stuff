@@ -83,7 +83,7 @@ var gproc;  // process {mill, drill, turn, grind, ream}
 var gtool;  // tool {hss, carbid, al2o3, sic, cbn, diamond}
 var gstock;  // stock {fe, cfe, al, cu, p, rp, hss, carbid}
 
-var gl;  // lang {plain, ger}
+var lang;  // lang {plain, ger}
 
 function init(){
 	gae = 2;
@@ -100,7 +100,7 @@ function init(){
 	gtool = "carbid";
 	gstock = "al";
 
-	gl = "ger";
+	lang = "ger";
 }
 
 function get_vc(){
@@ -179,7 +179,7 @@ function get_t(){
 }
 
 function translate(word){
-	return(trans[gl][word]);
+	return(trans[lang][word]);
 }
 
 function draw_process(){
