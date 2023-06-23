@@ -1,6 +1,6 @@
 <html>
 <meta charset="utf-8">
-<head><title>Fräse</title>
+<head><title>Mill/Fräse/Fres</title>
 <script type="text/javascript">
 
 var pi = 3.141526;
@@ -9,9 +9,16 @@ function round(x, a){
 	return(Math.round(x * a) / a)
 }
 
+var lang_names = {
+	"en": "English",
+	"de": "Deutch",
+	"nb": "Norsk bokmål",
+}
+
 var trans = {
-	"plain": {"hss":"hss", "carbid":"carbid", "fe":"fe", "cfe":"cfe", "al":"al", "cu":"cu", "p":"p", "rp":"rp", "al2o3":"al2o3", "sic":"sic", "cbn":"cbn", "diamond":"dimond", "mill":"mill", "turn":"trun", "drill":"drill", "ream":"ream", "grind":"grind", "ae":"ae", "f":"f", "s":"s", "d":"d", "t":"t", "h":"h", "b":"b", "fz":"fz", "vc":"vc", "hm":"hm", "T":"T", "P":"P", "ap":"ap", "l":"l"},
-	"ger": {"hss":"HSS", "carbid":"HM", "fe":"Fe", "cfe":"GG", "al":"Al", "cu":"Cu", "p":"K", "rp":"FK", "al2o3":"Korund", "sic":"SiC", "cbn":"CBN", "diamond":"Diamat", "mill":"Fräsen", "turn":"Drehen", "drill":"Bohren", "ream":"Reiben", "grind":"Schleifen", "ae":"ae", "f":"F", "s":"S", "d":"D", "t":"Z", "h":"Härte", "b":"Umschlingungswinkel", "fz":"Fz", "vc":"Vc", "hm":"hm", "T":"M", "P":"P", "ap":"ap", "l":"l"}
+	"en": {"hss":"hss", "carbid":"carbid", "fe":"fe", "cfe":"cfe", "al":"al", "cu":"cu", "p":"p", "rp":"rp", "al2o3":"al2o3", "sic":"sic", "cbn":"cbn", "diamond":"dimond", "mill":"mill", "turn":"trun", "drill":"drill", "ream":"ream", "grind":"grind", "ae":"ae", "f":"f", "s":"s", "d":"d", "t":"t", "h":"h", "b":"b", "fz":"fz", "vc":"vc", "hm":"hm", "T":"T", "P":"P", "ap":"ap", "l":"l"},
+	"de": {"hss":"HSS", "carbid":"HM", "fe":"Fe", "cfe":"GG", "al":"Al", "cu":"Cu", "p":"K", "rp":"FK", "al2o3":"Korund", "sic":"SiC", "cbn":"CBN", "diamond":"Diamat", "mill":"Fräsen", "turn":"Drehen", "drill":"Bohren", "ream":"Reiben", "grind":"Schleifen", "ae":"ae", "f":"F", "s":"S", "d":"D", "t":"Z", "h":"Härte", "b":"Umschlingungswinkel", "fz":"Fz", "vc":"Vc", "hm":"hm", "T":"M", "P":"P", "ap":"ap", "l":"l"},
+	"nb": {"hss":"HSS", "carbid":"HM", "fe":"Fe", "cfe":"GG", "al":"Al", "cu":"Cu", "p":"K", "rp":"FK", "al2o3":"Korund", "sic":"SiC", "cbn":"CBN", "diamond":"Diamat", "mill":"frese", "turn":"dreie", "drill":"bor", "ream":"rømm", "grind":"slip", "ae":"ae", "f":"F", "s":"S", "d":"D", "t":"Z", "h":"Härte", "b":"Umschlingungswinkel", "fz":"Fz", "vc":"Vc", "hm":"hm", "T":"M", "P":"P", "ap":"ap", "l":"l"}
 };
 
 var kc = {
@@ -51,7 +58,7 @@ var fz_corr = {
 	"ream":  2
 };
 
-var lang = {0:"plain", 1:"ger"};
+var langs = {0:"en", 1:"de", 2:"nb"};
 var proc = {0:"mill", 1:"turn", 2:"drill", 3:"ream", 4:"grind"};
 var tool = {
 	"mill": {0:"hss", 1:"carbid"},
@@ -83,7 +90,7 @@ var gproc;  // process {mill, drill, turn, grind, ream}
 var gtool;  // tool {hss, carbid, al2o3, sic, cbn, diamond}
 var gstock;  // stock {fe, cfe, al, cu, p, rp, hss, carbid}
 
-var lang;  // lang {plain, ger}
+var lang;  // lang {en, de}
 
 function init(){
 	gae = 2;
@@ -100,7 +107,7 @@ function init(){
 	gtool = "carbid";
 	gstock = "al";
 
-	lang = "ger";
+	lang = langs[1];
 }
 
 function get_vc(){
@@ -180,6 +187,18 @@ function get_t(){
 
 function translate(word){
 	return(trans[lang][word]);
+}
+
+function set_lang(){
+	lang = langs[document.getElementById("lang_select").selectedIndex];
+}
+
+function draw_langs(){
+	var lang_select = document.getElementById("lang_select");
+	lang_select.innerHTML = "";
+	for(i in langs){
+		lang_select.innerHTML += "<option>" + lang_names[langs[i]] + "</option>";
+	}
 }
 
 function draw_process(){
@@ -405,13 +424,15 @@ function calc(){
 input {width : 500px}
 </style>
 
-<body onload="init(); draw_process();">
+<body onload="init(); draw_process(); draw_langs(); ">
 	<form name="formular">
 		<select id="process_select" size = "6" onchange="set_process(); draw_tool(); draw_calc(); calc();">
 		</select>
 		<select id="tool_select" size = "6" onchange="set_tool(); draw_stock(); draw_calc(); calc();">
 		</select>
 		<select id="stock_select" size = "6" onchange="set_stock(); draw_calc(); calc();">
+		</select>
+		<select id="lang_select" size = "6" onchange="set_lang(); draw_process(); draw_tool(); draw_calc(); calc();">
 		</select>
 
 		<br>
